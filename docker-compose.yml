@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aybu_ticket
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: ./backend
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      NODE_ENV: development
+      PORT: 8080
+      CLIENT_URL: http://localhost:5173
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/aybu_ticket
+      DATABASE_SSL: "false"
+      REDIS_URL: redis://redis:6379
+      JWT_ACCESS_SECRET: local-access-secret-change-me
+      JWT_REFRESH_SECRET: local-refresh-secret-change-me
+      ADMIN_EMAIL: admin@aybu.edu.tr
+      ADMIN_PASSWORD: ChangeMe123!
+      ADMIN_FULL_NAME: AYBU Admin
+    ports:
+      - "8081:8080"
+    command: sh -c "node src/db/migrate.js && node src/db/seed.js && node src/server.js"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8081/api
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
