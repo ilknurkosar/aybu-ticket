@@ -32,4 +32,10 @@ jobs:
             --region ${{ secrets.GCP_REGION }} \
             --platform managed \
             --allow-unauthenticated \
+            --min-instances 0 \
+            --max-instances 1 \
+            --cpu 1 \
+            --memory 512Mi \
+            --concurrency 80 \
+            --timeout 60 \
             --set-env-vars NODE_ENV=production,CLIENT_URL=${{ secrets.CLIENT_URL }},DATABASE_URL=${{ secrets.DATABASE_URL }},REDIS_URL=${{ secrets.REDIS_URL }},REDIS_TOKEN=${{ secrets.REDIS_TOKEN }},JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }},JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }},LOCK_TTL_SECONDS=300,ALLOWED_EMAIL_DOMAIN=@aybu.edu.tr,DATABASE_SSL=true
