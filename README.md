@@ -240,6 +240,12 @@ Prometheus metrics are exposed at:
 GET /metrics
 ```
 
+Live backend example:
+
+```txt
+https://aybu-ticket-backend-173211781636.europe-west1.run.app/metrics
+```
+
 Important metrics:
 
 ```txt
@@ -251,11 +257,49 @@ aybu_reservation_success_total
 aybu_reservation_failed_total
 ```
 
-For Grafana Cloud, scrape `/metrics` from Cloud Run using Grafana Alloy or an external Prometheus-compatible collector.
+For Grafana Cloud, scrape `/metrics` from Cloud Run using Grafana Alloy or another Prometheus-compatible scraper, then remote-write to Grafana Cloud Metrics.
+
+Cost-conscious option:
+
+```txt
+Do not deploy a permanently running collector on Google Cloud unless required.
+Use Grafana Cloud's free-tier guidance or run Grafana Alloy locally during demos.
+```
+
+Grafana Cloud Metrics values to keep in GitHub Secrets if using a collector:
+
+```txt
+GRAFANA_PROMETHEUS_REMOTE_WRITE_URL
+GRAFANA_PROMETHEUS_USERNAME
+GRAFANA_PROMETHEUS_PASSWORD
+```
 
 ## Logging
 
-The backend writes structured JSON logs to stdout using `pino`. On Cloud Run, stdout logs can be forwarded to Grafana Cloud Loki using Grafana Alloy, Google Cloud Logging sinks, or another log forwarding agent.
+The backend writes structured JSON logs to stdout using `pino`. If Grafana Loki credentials are provided, the backend also pushes application logs directly to Grafana Cloud Loki.
+
+Required Loki environment variables:
+
+```txt
+GRAFANA_LOKI_URL
+GRAFANA_LOKI_USERNAME
+GRAFANA_LOKI_PASSWORD
+```
+
+`GRAFANA_LOKI_URL` can be either the base Loki URL or the full push URL:
+
+```txt
+https://logs-prod-xxx.grafana.net
+https://logs-prod-xxx.grafana.net/loki/api/v1/push
+```
+
+Suggested Loki labels:
+
+```txt
+app="aybu-cinema-booking"
+env="production"
+level="info"
+```
 
 ## GitHub Secrets
 
@@ -271,6 +315,13 @@ REDIS_URL
 REDIS_TOKEN
 JWT_ACCESS_SECRET
 JWT_REFRESH_SECRET
+ADMIN_EMAIL
+ADMIN_PASSWORD
+ADMIN_FULL_NAME
+GRAFANA_LOKI_URL
+GRAFANA_LOKI_USERNAME
+GRAFANA_LOKI_PASSWORD
+VITE_API_URL
 ```
 
 Create a Google Artifact Registry repository named:
