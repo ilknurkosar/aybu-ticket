@@ -24,6 +24,18 @@ function getClient() {
   return { client, mode };
 }
 
+async function setEx(key, value, ttlSeconds) {
+  const redis = getClient();
+  const payload = JSON.stringify(value);
+
+  if (redis.mode === 'upstash') {
+    await redis.client.set(key, payload, { ex: ttlSeconds });
+    return;
+  }
+
+  await redis.client.set(key, payload, 'EX', ttlSeconds);
+}
+
 async function setNxEx(key, value, ttlSeconds) {
   const redis = getClient();
   const payload = JSON.stringify(value);
@@ -82,4 +94,4 @@ async function scanKeys(pattern) {
   });
 }
 
-module.exports = { setNxEx, getJson, del, ttl, ping, scanKeys };
+module.exports = { setNxEx, setEx, getJson, del, ttl, ping, scanKeys };

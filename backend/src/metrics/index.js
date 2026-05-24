@@ -35,6 +35,23 @@ const reservationFailed = new client.Counter({
   labelNames: ['reason']
 });
 
+const activeLocks = new client.Gauge({
+  name: 'aybu_active_locks',
+  help: 'Currently held seat locks (with TTL)'
+});
+
+const dbPoolTotal = new client.Gauge({
+  name: 'aybu_db_pool_total',
+  help: 'Database pool total connections',
+  labelNames: ['state']
+});
+
+const httpRequestTotal = new client.Counter({
+  name: 'aybu_http_requests_total',
+  help: 'HTTP requests total',
+  labelNames: ['method', 'route', 'status']
+});
+
 module.exports = {
   registry: client.register,
   httpRequestDuration,
@@ -42,5 +59,8 @@ module.exports = {
   seatLockSuccess,
   seatLockConflict,
   reservationSuccess,
-  reservationFailed
+  reservationFailed,
+  activeLocks,
+  dbPoolTotal,
+  httpRequestTotal
 };

@@ -10,7 +10,7 @@ async function authenticate(req, res, next) {
     if (!token) throw new HttpError(401, 'Authentication required');
 
     const payload = verifyAccessToken(token);
-    const result = await query('SELECT id, email, full_name, role, created_at FROM users WHERE id = $1', [payload.sub]);
+    const result = await query('SELECT id, email, full_name, role, email_verified, created_at FROM users WHERE id = $1', [payload.sub]);
 
     if (!result.rowCount) throw new HttpError(401, 'User no longer exists');
 
@@ -26,4 +26,9 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { authenticate, requireAdmin };
+function requireVerifiedEmail(req, res, next) {
+  if (!req.user?.email_verified) return next(new HttpError(403, 'Email verification required'));
+  next();
+}
+
+module.exports = { authenticate, requireAdmin, requireVerifiedEmail };

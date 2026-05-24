@@ -21,7 +21,10 @@ const env = {
   adminFullName: process.env.ADMIN_FULL_NAME || 'AYBU Admin',
   lokiUrl: process.env.GRAFANA_LOKI_URL || '',
   lokiUsername: process.env.GRAFANA_LOKI_USERNAME || '',
-  lokiPassword: process.env.GRAFANA_LOKI_PASSWORD || ''
+  lokiPassword: process.env.GRAFANA_LOKI_PASSWORD || '',
+  resendApiKey: process.env.RESEND_API_KEY || '',
+  verificationEmailFrom: process.env.VERIFICATION_EMAIL_FROM || 'AYBU Cinema <onboarding@resend.dev>',
+  verificationCodeTtl: Number(process.env.VERIFICATION_CODE_TTL || 600)
 };
 
 module.exports = { env };

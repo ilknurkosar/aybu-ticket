@@ -23,6 +23,20 @@ router.post('/logout', asyncHandler(async (req, res) => {
   res.status(204).send();
 }));
 
+router.post('/send-verification', authenticate, asyncHandler(async (req, res) => {
+  await authService.sendVerification(req.user.id);
+  res.json({ message: 'Verification code sent' });
+}));
+
+router.post('/verify-email', authenticate, asyncHandler(async (req, res) => {
+  const { code } = req.body;
+  if (!code || typeof code !== 'string') {
+    return res.status(400).json({ error: 'Verification code is required' });
+  }
+  await authService.verifyEmail(req.user.id, code);
+  res.json({ message: 'Email verified successfully' });
+}));
+
 router.get('/me', authenticate, (req, res) => {
   res.json({ user: authService.publicUser(req.user) });
 });

@@ -1,4 +1,4 @@
-const { httpRequestDuration } = require('../metrics');
+const { httpRequestDuration, httpRequestTotal } = require('../metrics');
 
 function metricsMiddleware(req, res, next) {
   const start = process.hrtime.bigint();
@@ -9,6 +9,9 @@ function metricsMiddleware(req, res, next) {
     httpRequestDuration.observe(
       { method: req.method, route, status: String(res.statusCode) },
       elapsedSeconds
+    );
+    httpRequestTotal.inc(
+      { method: req.method, route, status: String(res.statusCode) }
     );
   });
 

@@ -29,6 +29,7 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     const payload = await apiRequest('/auth/login', { method: 'POST', body: { email, password } });
     saveSession(payload);
+    return payload;
   }
 
   async function register(fullName, email, password) {
@@ -37,6 +38,22 @@ export function AuthProvider({ children }) {
       body: { fullName, email, password }
     });
     saveSession(payload);
+    return payload;
+  }
+
+  async function sendVerification() {
+    await apiRequest('/auth/send-verification', { method: 'POST' });
+  }
+
+  async function verifyEmail(code) {
+    await apiRequest('/auth/verify-email', { method: 'POST', body: { code } });
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      parsed.emailVerified = true;
+      localStorage.setItem('user', JSON.stringify(parsed));
+      setUser(parsed);
+    }
   }
 
   async function logout() {
@@ -50,7 +67,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   }
 
-  return <AuthContext.Provider value={{ user, login, register, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, login, register, sendVerification, verifyEmail, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

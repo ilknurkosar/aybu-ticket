@@ -3,7 +3,7 @@ const { z } = require('zod');
 const { query, withTransaction } = require('../db/pool');
 const { getLock } = require('../services/lockService');
 const { asyncHandler } = require('../utils/asyncHandler');
-const { authenticate, requireAdmin } = require('../middleware/auth');
+const { authenticate, requireAdmin, requireVerifiedEmail } = require('../middleware/auth');
 const { HttpError } = require('../utils/httpError');
 const { logger } = require('../logger');
 
@@ -47,7 +47,7 @@ router.get('/', asyncHandler(async (req, res) => {
   res.json({ events: result.rows });
 }));
 
-router.get('/:eventId/seats', authenticate, asyncHandler(async (req, res) => {
+router.get('/:eventId/seats', authenticate, requireVerifiedEmail, asyncHandler(async (req, res) => {
   const eventResult = await query('SELECT * FROM events WHERE id = $1', [req.params.eventId]);
   if (!eventResult.rowCount) throw new HttpError(404, 'Event not found');
 
@@ -91,7 +91,7 @@ router.get('/:eventId/seats', authenticate, asyncHandler(async (req, res) => {
   res.json({ event: eventResult.rows[0], seats, lockLookupAvailable });
 }));
 
-router.post('/', authenticate, requireAdmin, asyncHandler(async (req, res) => {
+router.post('/', authenticate, requireVerifiedEmail, requireAdmin, asyncHandler(async (req, res) => {
   const data = eventSchema.parse(req.body);
   const event = await withTransaction(async (client) => {
     const result = await client.query(
@@ -118,7 +118,7 @@ router.post('/', authenticate, requireAdmin, asyncHandler(async (req, res) => {
   res.status(201).json({ event });
 }));
 
-router.patch('/:eventId', authenticate, requireAdmin, asyncHandler(async (req, res) => {
+router.patch('/:eventId', authenticate, requireVerifiedEmail, requireAdmin, asyncHandler(async (req, res) => {
   const patchSchema = z.object({
     title: eventSchema.shape.title.optional(),
     description: eventSchema.shape.description.optional(),
@@ -143,7 +143,7 @@ router.patch('/:eventId', authenticate, requireAdmin, asyncHandler(async (req, r
   res.json({ event: result.rows[0] });
 }));
 
-router.delete('/:eventId', authenticate, requireAdmin, asyncHandler(async (req, res) => {
+router.delete('/:eventId', authenticate, requireVerifiedEmail, requireAdmin, asyncHandler(async (req, res) => {
   const result = await query('DELETE FROM events WHERE id = $1 RETURNING id', [req.params.eventId]);
   if (!result.rowCount) throw new HttpError(404, 'Event not found');
   res.status(204).send();

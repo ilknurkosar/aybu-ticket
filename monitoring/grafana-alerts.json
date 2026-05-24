@@ -1,0 +1,84 @@
+{
+  "alerts": [
+    {
+      "title": "Backend is down",
+      "expr": "up{job=\"aybu-ticket-backend\"} == 0",
+      "for": "60s",
+      "labels": { "severity": "critical", "team": "aybu" },
+      "annotations": {
+        "summary": "Backend is unreachable (up == 0 for 1 minute)",
+        "description": "The aybu-ticket-backend service has not been scrapable for over 1 minute."
+      }
+    },
+    {
+      "title": "High HTTP 5xx error rate",
+      "expr": "sum(rate(aybu_http_requests_total{status=~\"5..\"}[5m])) / sum(rate(aybu_http_requests_total[5m])) > 0.05",
+      "for": "2m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "5xx error rate is above 5%",
+        "description": "The HTTP 5xx error rate has been above 5% for the last 2 minutes."
+      }
+    },
+    {
+      "title": "High HTTP p95 latency",
+      "expr": "histogram_quantile(0.95, sum by (le) (rate(aybu_http_request_duration_seconds_bucket[5m]))) > 2",
+      "for": "2m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "p95 latency is above 2 seconds",
+        "description": "The p95 HTTP request latency has exceeded 2 seconds for 2 minutes."
+      }
+    },
+    {
+      "title": "DB pool waiting connections",
+      "expr": "aybu_db_pool_total{state=\"waiting\"} > 0",
+      "for": "5m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "Database pool has waiting connections for 5 minutes",
+        "description": "There are database queries waiting for a connection to become available."
+      }
+    },
+    {
+      "title": "High event loop lag",
+      "expr": "aybu_nodejs_eventloop_lag_seconds > 1",
+      "for": "1m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "Event loop lag is above 1 second",
+        "description": "The Node.js event loop is blocked or heavily loaded."
+      }
+    },
+    {
+      "title": "High memory usage",
+      "expr": "aybu_nodejs_heap_size_used_bytes / aybu_nodejs_heap_size_total_bytes > 0.9",
+      "for": "5m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "Heap usage is above 90%",
+        "description": "Node.js heap usage has been above 90% for 5 minutes."
+      }
+    },
+    {
+      "title": "Many active seat locks stuck",
+      "expr": "aybu_active_locks > 20",
+      "for": "10m",
+      "labels": { "severity": "info", "team": "aybu" },
+      "annotations": {
+        "summary": "More than 20 active seat locks for 10 minutes",
+        "description": "There are {{ $value }} active locks. Consider investigating stuck locks."
+      }
+    },
+    {
+      "title": "Redis health check failure",
+      "expr": "rate(aybu_seat_lock_conflict_total[5m]) > 10",
+      "for": "5m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "Unusually high lock conflict rate",
+        "description": "Seat lock conflicts are above 10 per second, possible Redis issue or contention."
+      }
+    }
+  ]
+}

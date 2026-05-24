@@ -1,12 +1,12 @@
 const express = require('express');
 const { query } = require('../db/pool');
-const { authenticate, requireAdmin } = require('../middleware/auth');
+const { authenticate, requireAdmin, requireVerifiedEmail } = require('../middleware/auth');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { countActiveLocks } = require('../services/lockService');
 
 const router = express.Router();
 
-router.use(authenticate, requireAdmin);
+router.use(authenticate, requireVerifiedEmail, requireAdmin);
 
 router.get('/summary', asyncHandler(async (req, res) => {
   const [stats, events, recentReservations, activeLocks] = await Promise.all([

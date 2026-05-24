@@ -93,6 +93,16 @@ textarea {
   opacity: 0.5;
 }
 
+.link-button {
+  background: none;
+  border: none;
+  color: #d4a84f;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  padding: 0;
+}
+
 .primary {
   color: #120706;
   background: linear-gradient(135deg, #ffd977, #c91f3c);
@@ -150,6 +160,23 @@ textarea {
   gap: 14px;
   margin-top: 26px;
   flex-wrap: wrap;
+}
+
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.hero-pills span {
+  padding: 9px 12px;
+  color: #f5d27a;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid rgba(212, 168, 79, 0.24);
+  border-radius: 999px;
+  background: rgba(212, 168, 79, 0.08);
 }
 
 .hero-poster {
@@ -332,6 +359,12 @@ textarea {
 .timer-card strong {
   font-size: 42px;
   color: #d4a84f;
+}
+
+.timer-card small {
+  color: #cbbca1;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .cinema-hall {
