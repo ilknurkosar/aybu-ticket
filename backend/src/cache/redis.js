@@ -54,6 +54,11 @@ async function ttl(key) {
   return redis.client.ttl(key);
 }
 
+async function ping() {
+  const redis = getClient();
+  return redis.client.ping();
+}
+
 async function scanKeys(pattern) {
   const redis = getClient();
 
@@ -77,4 +82,4 @@ async function scanKeys(pattern) {
   });
 }
 
-module.exports = { setNxEx, getJson, del, ttl, scanKeys };
+module.exports = { setNxEx, getJson, del, ttl, ping, scanKeys };

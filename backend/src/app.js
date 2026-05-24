@@ -6,6 +6,8 @@ const { logger } = require('./logger');
 const { metricsMiddleware } = require('./middleware/metrics');
 const { notFound, errorHandler } = require('./middleware/error');
 const { registry } = require('./metrics');
+const { query } = require('./db/pool');
+const redis = require('./cache/redis');
 
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
@@ -30,6 +32,30 @@ function createApp() {
 
   app.get('/health', (req, res) => {
     res.json({ status: 'ok', service: 'aybu-cinema-booking' });
+  });
+
+  app.get('/health/dependencies', async (req, res) => {
+    const checks = {
+      database: { ok: false },
+      redis: { ok: false }
+    };
+
+    try {
+      await query('SELECT 1');
+      checks.database.ok = true;
+    } catch (error) {
+      checks.database.error = error.message;
+    }
+
+    try {
+      await redis.ping();
+      checks.redis.ok = true;
+    } catch (error) {
+      checks.redis.error = error.message;
+    }
+
+    const ok = checks.database.ok && checks.redis.ok;
+    res.status(ok ? 200 : 503).json({ status: ok ? 'ok' : 'degraded', checks });
   });
 
   app.get('/metrics', async (req, res) => {
