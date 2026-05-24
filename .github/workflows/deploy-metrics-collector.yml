@@ -1,0 +1,49 @@
+name: Deploy Metrics Collector to Cloud Run
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Configure Docker auth
+        run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
+      - name: Build and push Alloy image
+        run: |
+          IMAGE=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/aybu-ticket/metrics-collector:${{ github.sha }}
+          docker build -t $IMAGE ./monitoring/alloy-cloud-run
+          docker push $IMAGE
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+      - name: Deploy Cloud Run metrics collector
+        env:
+          AYBU_BACKEND_METRICS_HOST: aybu-ticket-backend-173211781636.europe-west1.run.app
+          GRAFANA_PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.GRAFANA_PROMETHEUS_REMOTE_WRITE_URL }}
+          GRAFANA_PROMETHEUS_USERNAME: ${{ secrets.GRAFANA_PROMETHEUS_USERNAME }}
+          GRAFANA_PROMETHEUS_PASSWORD: ${{ secrets.GRAFANA_PROMETHEUS_PASSWORD }}
+        run: |
+          gcloud run deploy aybu-ticket-metrics-collector \
+            --image $IMAGE \
+            --region ${{ secrets.GCP_REGION }} \
+            --platform managed \
+            --no-allow-unauthenticated \
+            --min-instances 1 \
+            --max-instances 1 \
+            --cpu 1 \
+            --memory 256Mi \
+            --port 8080 \
+            --no-cpu-throttling \
+            --concurrency 1 \
+            --timeout 60 \
+            --set-env-vars "^|^AYBU_BACKEND_METRICS_HOST=${AYBU_BACKEND_METRICS_HOST}|GRAFANA_PROMETHEUS_REMOTE_WRITE_URL=${GRAFANA_PROMETHEUS_REMOTE_WRITE_URL}|GRAFANA_PROMETHEUS_USERNAME=${GRAFANA_PROMETHEUS_USERNAME}|GRAFANA_PROMETHEUS_PASSWORD=${GRAFANA_PROMETHEUS_PASSWORD}"

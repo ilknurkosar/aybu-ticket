@@ -266,12 +266,42 @@ Do not deploy a permanently running collector on Google Cloud unless required.
 Use Grafana Cloud's free-tier guidance or run Grafana Alloy locally during demos.
 ```
 
+Cloud Run collector option:
+
+```txt
+.github/workflows/deploy-metrics-collector.yml
+monitoring/alloy-cloud-run/
+```
+
+This deploys Grafana Alloy as `aybu-ticket-metrics-collector` on Cloud Run. It scrapes the live backend `/metrics` endpoint every 60 seconds and remote-writes to Grafana Cloud Metrics.
+
+Cost note:
+
+```txt
+The collector uses min-instances=1 and --no-cpu-throttling so background scraping continues.
+This can create ongoing Cloud Run cost. Keep max-instances=1 and delete/stop the service when not needed.
+```
+
+Stop/delete when not needed:
+
+```bash
+gcloud run services delete aybu-ticket-metrics-collector --region europe-west1
+```
+
 Grafana Cloud Metrics values to keep in GitHub Secrets if using a collector:
 
 ```txt
 GRAFANA_PROMETHEUS_REMOTE_WRITE_URL
 GRAFANA_PROMETHEUS_USERNAME
 GRAFANA_PROMETHEUS_PASSWORD
+```
+
+Required GitHub Secrets for the Cloud Run collector:
+
+```txt
+GRAFANA_PROMETHEUS_REMOTE_WRITE_URL=https://prometheus-prod-65-prod-eu-west-2.grafana.net/api/prom/push
+GRAFANA_PROMETHEUS_USERNAME=3253816
+GRAFANA_PROMETHEUS_PASSWORD=<Grafana token with metrics:write>
 ```
 
 This repository includes a local/demo Alloy config:
@@ -359,6 +389,9 @@ GRAFANA_LOKI_URL
 GRAFANA_LOKI_USERNAME
 GRAFANA_LOKI_PASSWORD
 VITE_API_URL
+GRAFANA_PROMETHEUS_REMOTE_WRITE_URL
+GRAFANA_PROMETHEUS_USERNAME
+GRAFANA_PROMETHEUS_PASSWORD
 ```
 
 Create a Google Artifact Registry repository named:

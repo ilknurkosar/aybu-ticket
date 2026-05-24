@@ -1,0 +1,26 @@
+prometheus.scrape "aybu_ticket_backend" {
+  targets = [
+    {
+      __address__      = sys.env("AYBU_BACKEND_METRICS_HOST"),
+      __scheme__       = "https",
+      __metrics_path__ = "/metrics",
+      job              = "aybu-ticket-backend",
+      app              = "aybu-cinema-booking",
+      env              = "production",
+    },
+  ]
+
+  scrape_interval = "60s"
+  forward_to      = [prometheus.remote_write.grafana_cloud.receiver]
+}
+
+prometheus.remote_write "grafana_cloud" {
+  endpoint {
+    url = sys.env("GRAFANA_PROMETHEUS_REMOTE_WRITE_URL")
+
+    basic_auth {
+      username = sys.env("GRAFANA_PROMETHEUS_USERNAME")
+      password = sys.env("GRAFANA_PROMETHEUS_PASSWORD")
+    }
+  }
+}
