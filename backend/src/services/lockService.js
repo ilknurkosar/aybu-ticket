@@ -10,6 +10,10 @@ function lockKey(eventId, seatId) {
   return `lock:event:${eventId}:seat:${seatId}`;
 }
 
+function sameId(left, right) {
+  return String(left || '').toLowerCase() === String(right || '').toLowerCase();
+}
+
 async function assertSeatCanBeLocked(eventId, seatId) {
   const seat = await query(
     `SELECT s.id
@@ -39,8 +43,13 @@ async function createLock({ eventId, seatId, userId }) {
   const value = { lockId, eventId, seatId, userId, expiresAt };
   let acquired;
   try {
+    const ownedLocks = await getUserLocksForEvent({ eventId, userId });
+    if (ownedLocks.length >= 2 && !ownedLocks.some((lock) => sameId(lock.seatId, seatId))) {
+      throw new HttpError(409, 'You can select up to 2 seats for one event');
+    }
     acquired = await redis.setNxEx(lockKey(eventId, seatId), value, env.lockTtlSeconds);
   } catch (error) {
+    if (error.status) throw error;
     logger.error({ error, eventId, seatId }, 'seat_lock_create_failed');
     throw new HttpError(503, 'Seat locking service is temporarily unavailable');
   }
@@ -52,6 +61,15 @@ async function createLock({ eventId, seatId, userId }) {
 
   metrics.seatLockSuccess.inc();
   return { ...value, ttlSeconds: env.lockTtlSeconds };
+}
+
+async function getUserLocksForEvent({ eventId, userId }) {
+  const keys = await redis.scanKeys(`lock:event:${eventId}:seat:*`);
+  const locks = await Promise.all(keys.map(async (key) => {
+    const lock = await redis.getJson(key);
+    return lock && sameId(lock.userId, userId) ? lock : null;
+  }));
+  return locks.filter(Boolean);
 }
 
 async function getLock(eventId, seatId) {

@@ -268,6 +268,19 @@ textarea {
   font-size: 24px;
 }
 
+.event-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+  padding: 10px 14px;
+  color: #120706 !important;
+  font-size: 13px;
+  font-weight: 900;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffd977, #c91f3c);
+}
+
 .progress {
   height: 9px;
   overflow: hidden;

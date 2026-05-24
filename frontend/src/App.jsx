@@ -202,6 +202,7 @@ function EventsPage() {
               <p>{event.venue}</p>
               <div className="progress"><i style={{ width: `${event.total_seats ? (event.reserved_seats / event.total_seats) * 100 : 0}%` }} /></div>
               <small>{event.reserved_seats}/{event.total_seats} seats reserved</small>
+              <span className="event-button">Choose seats</span>
             </div>
           </Link>
         ))}
@@ -214,7 +215,7 @@ function EventDetail() {
   const { eventId } = useParams();
   const [event, setEvent] = useState(null);
   const [seats, setSeats] = useState([]);
-  const [lock, setLock] = useState(null);
+  const [locks, setLocks] = useState([]);
   const [secondsLeft, setSecondsLeft] = useState(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -224,12 +225,7 @@ function EventDetail() {
     const data = await apiRequest(`/events/${eventId}/seats`);
     setEvent(data.event);
     setSeats(data.seats);
-    const mine = data.seats.find((seat) => seat.status === 'selected_by_me' && seat.lock);
-    if (mine) {
-      setLock(mine.lock);
-    } else {
-      setLock(null);
-    }
+    setLocks(data.seats.filter((seat) => seat.status === 'selected_by_me' && seat.lock).map((seat) => seat.lock));
   }
 
   useEffect(() => {
@@ -237,17 +233,17 @@ function EventDetail() {
   }, [eventId]);
 
   useEffect(() => {
-    if (!lock) return;
+    if (!locks.length) return;
     const interval = setInterval(() => {
-      const remaining = Math.max(0, Math.floor((new Date(lock.expiresAt).getTime() - Date.now()) / 1000));
+      const remaining = Math.min(...locks.map((item) => Math.max(0, Math.floor((new Date(item.expiresAt).getTime() - Date.now()) / 1000))));
       setSecondsLeft(remaining);
       if (remaining === 0) {
-        setLock(null);
+        setLocks([]);
         loadSeats().catch(() => {});
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [lock]);
+  }, [locks]);
 
   async function selectSeat(seat) {
     setError('');
@@ -258,14 +254,19 @@ function EventDetail() {
           method: 'DELETE',
           body: { eventId, seatId: seat.id }
         });
-        setLock(null);
+        setLocks((current) => current.filter((item) => item.lockId !== seat.lock.lockId));
         setSecondsLeft(0);
         await loadSeats();
         return;
       }
 
+      if (locks.length >= 2) {
+        setError('You can select up to 2 seats for one event.');
+        return;
+      }
+
       const data = await apiRequest('/locks', { method: 'POST', body: { eventId, seatId: seat.id } });
-      setLock(data.lock);
+      setLocks((current) => [...current, data.lock]);
       setSecondsLeft(data.lock.ttlSeconds);
       await loadSeats();
     } catch (err) {
@@ -275,13 +276,13 @@ function EventDetail() {
   }
 
   async function checkout() {
-    if (!lock) return;
+    if (!locks.length) return;
     setError('');
     try {
-      await apiRequest('/reservations', {
+      await Promise.all(locks.map((item) => apiRequest('/reservations', {
         method: 'POST',
-        body: { eventId: lock.eventId, seatId: lock.seatId, lockId: lock.lockId }
-      });
+        body: { eventId: item.eventId, seatId: item.seatId, lockId: item.lockId }
+      })));
       navigate('/reservation-success');
     } catch (err) {
       setError(err.message);
@@ -304,8 +305,8 @@ function EventDetail() {
         </div>
         <div className="timer-card">
           <span>Selection timer</span>
-          <strong>{lock ? `${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}` : '--:--'}</strong>
-          <small>{lock ? 'Complete your reservation before time runs out.' : 'Pick an available seat to start.'}</small>
+          <strong>{locks.length ? `${String(Math.floor(secondsLeft / 60)).padStart(2, '0')}:${String(secondsLeft % 60).padStart(2, '0')}` : '--:--'}</strong>
+          <small>{locks.length ? `${locks.length}/2 seats selected. Complete your reservation before time runs out.` : 'Pick up to 2 available seats to start.'}</small>
         </div>
       </section>
 
@@ -342,8 +343,8 @@ function EventDetail() {
 
       <aside className="checkout-panel">
         <h2>Complete reservation</h2>
-        <p className="muted">Your selected seat is held for a short time. Confirm it before the timer ends.</p>
-        <button className="button primary" disabled={!lock || secondsLeft <= 0} onClick={checkout}>Confirm Reservation</button>
+        <p className="muted">You can select up to 2 seats. Confirm them before the timer ends.</p>
+        <button className="button primary" disabled={!locks.length || secondsLeft <= 0} onClick={checkout}>Confirm {locks.length || ''} Reservation{locks.length > 1 ? 's' : ''}</button>
       </aside>
     </main>
   );
