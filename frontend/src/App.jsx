@@ -202,7 +202,6 @@ function EventsPage() {
               <p>{event.venue}</p>
               <div className="progress"><i style={{ width: `${event.total_seats ? (event.reserved_seats / event.total_seats) * 100 : 0}%` }} /></div>
               <small>{event.reserved_seats}/{event.total_seats} seats reserved</small>
-              <span className="event-button">Choose seats</span>
             </div>
           </Link>
         ))}
@@ -279,10 +278,12 @@ function EventDetail() {
     if (!locks.length) return;
     setError('');
     try {
-      await Promise.all(locks.map((item) => apiRequest('/reservations', {
-        method: 'POST',
-        body: { eventId: item.eventId, seatId: item.seatId, lockId: item.lockId }
-      })));
+      for (const item of locks) {
+        await apiRequest('/reservations', {
+          method: 'POST',
+          body: { eventId: item.eventId, seatId: item.seatId, lockId: item.lockId }
+        });
+      }
       navigate('/reservation-success');
     } catch (err) {
       setError(err.message);

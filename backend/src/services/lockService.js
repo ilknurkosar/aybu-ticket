@@ -43,8 +43,10 @@ async function createLock({ eventId, seatId, userId }) {
   const value = { lockId, eventId, seatId, userId, expiresAt };
   let acquired;
   try {
+    const reservationCount = await countUserReservationsForEvent({ eventId, userId });
     const ownedLocks = await getUserLocksForEvent({ eventId, userId });
-    if (ownedLocks.length >= 2 && !ownedLocks.some((lock) => sameId(lock.seatId, seatId))) {
+    const alreadySelected = ownedLocks.some((lock) => sameId(lock.seatId, seatId));
+    if (reservationCount + ownedLocks.length >= 2 && !alreadySelected) {
       throw new HttpError(409, 'You can select up to 2 seats for one event');
     }
     acquired = await redis.setNxEx(lockKey(eventId, seatId), value, env.lockTtlSeconds);
@@ -61,6 +63,16 @@ async function createLock({ eventId, seatId, userId }) {
 
   metrics.seatLockSuccess.inc();
   return { ...value, ttlSeconds: env.lockTtlSeconds };
+}
+
+async function countUserReservationsForEvent({ eventId, userId }) {
+  const result = await query(
+    `SELECT COUNT(*)::int AS total
+     FROM reservations
+     WHERE event_id = $1 AND user_id = $2 AND status = 'confirmed'`,
+    [eventId, userId]
+  );
+  return result.rows[0]?.total || 0;
 }
 
 async function getUserLocksForEvent({ eventId, userId }) {

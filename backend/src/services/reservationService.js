@@ -9,6 +9,18 @@ async function createReservation({ eventId, seatId, lockId, userId }) {
 
   try {
     const reservation = await withTransaction(async (client) => {
+      await client.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`reservation:${eventId}:${userId}`]);
+
+      const reservationCount = await client.query(
+        `SELECT COUNT(*)::int AS total
+         FROM reservations
+         WHERE event_id = $1 AND user_id = $2 AND status = 'confirmed'`,
+        [eventId, userId]
+      );
+      if ((reservationCount.rows[0]?.total || 0) >= 2) {
+        throw new HttpError(409, 'You can reserve up to 2 seats for one event');
+      }
+
       const seat = await client.query(
         'SELECT id FROM seats WHERE id = $1 AND event_id = $2 FOR UPDATE',
         [seatId, eventId]
