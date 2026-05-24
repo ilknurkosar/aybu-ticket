@@ -18,6 +18,19 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
       - uses: google-github-actions/setup-gcloud@v2
+      - name: Validate required secrets
+        env:
+          GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          GCP_REGION: ${{ secrets.GCP_REGION }}
+          GRAFANA_PROMETHEUS_REMOTE_WRITE_URL: ${{ secrets.GRAFANA_PROMETHEUS_REMOTE_WRITE_URL }}
+          GRAFANA_PROMETHEUS_USERNAME: ${{ secrets.GRAFANA_PROMETHEUS_USERNAME }}
+          GRAFANA_PROMETHEUS_PASSWORD: ${{ secrets.GRAFANA_PROMETHEUS_PASSWORD }}
+        run: |
+          test -n "$GCP_PROJECT_ID" || (echo "Missing GCP_PROJECT_ID secret" && exit 1)
+          test -n "$GCP_REGION" || (echo "Missing GCP_REGION secret" && exit 1)
+          test -n "$GRAFANA_PROMETHEUS_REMOTE_WRITE_URL" || (echo "Missing GRAFANA_PROMETHEUS_REMOTE_WRITE_URL secret" && exit 1)
+          test -n "$GRAFANA_PROMETHEUS_USERNAME" || (echo "Missing GRAFANA_PROMETHEUS_USERNAME secret" && exit 1)
+          test -n "$GRAFANA_PROMETHEUS_PASSWORD" || (echo "Missing GRAFANA_PROMETHEUS_PASSWORD secret" && exit 1)
       - name: Configure Docker auth
         run: gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev --quiet
       - name: Build and push Alloy image
@@ -41,7 +54,7 @@ jobs:
             --min-instances 1 \
             --max-instances 1 \
             --cpu 1 \
-            --memory 256Mi \
+            --memory 512Mi \
             --port 8080 \
             --no-cpu-throttling \
             --concurrency 1 \
