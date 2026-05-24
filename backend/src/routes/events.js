@@ -5,6 +5,7 @@ const { getLock } = require('../services/lockService');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 const { HttpError } = require('../utils/httpError');
+const { logger } = require('../logger');
 
 const router = express.Router();
 
@@ -60,8 +61,17 @@ router.get('/:eventId/seats', authenticate, asyncHandler(async (req, res) => {
     [req.params.eventId]
   );
 
+  let lockLookupAvailable = true;
   const seats = await Promise.all(seatsResult.rows.map(async (seat) => {
-    const lock = seat.reserved ? null : await getLock(req.params.eventId, seat.id);
+    let lock = null;
+    if (!seat.reserved) {
+      try {
+        lock = await getLock(req.params.eventId, seat.id);
+      } catch (error) {
+        lockLookupAvailable = false;
+        logger.error({ error, eventId: req.params.eventId, seatId: seat.id }, 'seat_lock_lookup_failed');
+      }
+    }
     let status = 'available';
     const ownedByMe = lock && sameId(lock.userId, req.user.id);
     if (seat.reserved) status = 'reserved';
@@ -78,7 +88,7 @@ router.get('/:eventId/seats', authenticate, asyncHandler(async (req, res) => {
     };
   }));
 
-  res.json({ event: eventResult.rows[0], seats });
+  res.json({ event: eventResult.rows[0], seats, lockLookupAvailable });
 }));
 
 router.post('/', authenticate, requireAdmin, asyncHandler(async (req, res) => {

@@ -4,6 +4,7 @@ const redis = require('../cache/redis');
 const { query } = require('../db/pool');
 const { HttpError } = require('../utils/httpError');
 const metrics = require('../metrics');
+const { logger } = require('../logger');
 
 function lockKey(eventId, seatId) {
   return `lock:event:${eventId}:seat:${seatId}`;
@@ -36,7 +37,13 @@ async function createLock({ eventId, seatId, userId }) {
   const lockId = randomUUID();
   const expiresAt = new Date(Date.now() + env.lockTtlSeconds * 1000).toISOString();
   const value = { lockId, eventId, seatId, userId, expiresAt };
-  const acquired = await redis.setNxEx(lockKey(eventId, seatId), value, env.lockTtlSeconds);
+  let acquired;
+  try {
+    acquired = await redis.setNxEx(lockKey(eventId, seatId), value, env.lockTtlSeconds);
+  } catch (error) {
+    logger.error({ error, eventId, seatId }, 'seat_lock_create_failed');
+    throw new HttpError(503, 'Seat locking service is temporarily unavailable');
+  }
 
   if (!acquired) {
     metrics.seatLockConflict.inc();
@@ -53,7 +60,13 @@ async function getLock(eventId, seatId) {
 
 async function releaseLock({ eventId, seatId, lockId, userId }) {
   const key = lockKey(eventId, seatId);
-  const lock = await redis.getJson(key);
+  let lock;
+  try {
+    lock = await redis.getJson(key);
+  } catch (error) {
+    logger.error({ error, eventId, seatId }, 'seat_lock_release_failed');
+    throw new HttpError(503, 'Seat locking service is temporarily unavailable');
+  }
   if (!lock) return false;
   if (lock.lockId !== lockId || lock.userId !== userId) {
     throw new HttpError(403, 'Lock does not belong to this user');
@@ -72,8 +85,13 @@ async function requireOwnedLock({ eventId, seatId, lockId, userId }) {
 }
 
 async function countActiveLocks() {
-  const keys = await redis.scanKeys('lock:event:*:seat:*');
-  return keys.length;
+  try {
+    const keys = await redis.scanKeys('lock:event:*:seat:*');
+    return keys.length;
+  } catch (error) {
+    logger.error({ error }, 'active_lock_count_failed');
+    return 0;
+  }
 }
 
 module.exports = { createLock, releaseLock, requireOwnedLock, getLock, countActiveLocks, lockKey };
