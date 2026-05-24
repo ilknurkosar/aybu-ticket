@@ -39,5 +39,6 @@ jobs:
             --max-instances 1 \
             --cpu 1 \
             --memory 256Mi \
+            --port 80 \
             --concurrency 80 \
             --timeout 60
