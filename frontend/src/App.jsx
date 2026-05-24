@@ -437,6 +437,7 @@ function AdminDashboard() {
       <div className="page-heading">
         <p className="eyebrow">Admin Dashboard</p>
         <h1>Event control center</h1>
+        <a className="button primary" href="https://ilknurkosar.grafana.net/d/aybu-cinema-booking" target="_blank" rel="noopener noreferrer" style={{ marginTop: 8, display: 'inline-block' }}>Monitoring</a>
       </div>
       {error && <div className="alert">{error}</div>}
       <section className="stat-grid">
