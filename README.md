@@ -274,6 +274,43 @@ GRAFANA_PROMETHEUS_USERNAME
 GRAFANA_PROMETHEUS_PASSWORD
 ```
 
+This repository includes a local/demo Alloy config:
+
+```txt
+monitoring/alloy-cloud-run.example.alloy
+```
+
+To use it without adding another paid cloud service:
+
+```txt
+1. Copy the file to monitoring/alloy-cloud-run.local.alloy.
+2. Replace REPLACE_WITH_GRAFANA_CLOUD_TOKEN with a Grafana Cloud token that has metrics:write.
+3. Run Grafana Alloy locally during demos.
+4. Open Grafana Explore with the Prometheus datasource and query aybu_* metrics.
+```
+
+Example PromQL queries:
+
+```promql
+sum by (method, status) (rate(aybu_http_request_duration_seconds_count[5m]))
+histogram_quantile(0.95, sum by (le) (rate(aybu_http_request_duration_seconds_bucket[5m])))
+increase(aybu_seat_lock_success_total[15m])
+increase(aybu_seat_lock_conflict_total[15m])
+increase(aybu_reservation_success_total[15m])
+```
+
+Importable Grafana dashboard:
+
+```txt
+monitoring/aybu-ticket-dashboard.json
+```
+
+Import path:
+
+```txt
+Grafana → Dashboards → New → Import → Upload JSON
+```
+
 ## Logging
 
 The backend writes structured JSON logs to stdout using `pino`. If Grafana Loki credentials are provided, the backend also pushes application logs directly to Grafana Cloud Loki.
