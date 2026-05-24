@@ -100,7 +100,12 @@ async function sendVerification(userId) {
   if (!result.rowCount) throw new HttpError(404, 'User not found');
   const user = result.rows[0];
   if (user.email_verified) throw new HttpError(400, 'Email is already verified');
-  await sendVerificationCode(user.email);
+  try {
+    await sendVerificationCode(user.email);
+  } catch (error) {
+    logger.error({ error, email: user.email }, 'send_verification_failed');
+    throw new HttpError(424, 'Verification email could not be sent. Check SMTP email settings.');
+  }
 }
 
 async function verifyEmail(userId, code) {

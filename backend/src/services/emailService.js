@@ -1,15 +1,23 @@
 const crypto = require('crypto');
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const { env } = require('../config/env');
 const redis = require('../cache/redis');
 
-let resendClient;
+let transporter;
 
-function getResend() {
-  if (!resendClient && env.resendApiKey) {
-    resendClient = new Resend(env.resendApiKey);
+function getTransporter() {
+  if (!transporter && env.smtpUser && env.smtpPass) {
+    transporter = nodemailer.createTransport({
+      host: env.smtpHost,
+      port: env.smtpPort,
+      secure: env.smtpPort === 465,
+      auth: {
+        user: env.smtpUser,
+        pass: env.smtpPass
+      }
+    });
   }
-  return resendClient;
+  return transporter;
 }
 
 function verificationKey(email) {
@@ -24,12 +32,13 @@ async function sendVerificationCode(email) {
   const code = generateCode();
   const key = verificationKey(email);
   await redis.setEx(key, { code, email }, env.verificationCodeTtl);
-  const resend = getResend();
-  if (!resend) return code;
-  const { error } = await resend.emails.send({
+  const mailer = getTransporter();
+  if (!mailer) throw new Error('SMTP credentials are not configured');
+  await mailer.sendMail({
     from: env.verificationEmailFrom,
-    to: [email],
-    subject: 'AYBU Cinema — Email Verification',
+    to: email,
+    subject: 'AYBU Cinema - Email Verification',
+    text: `Your AYBU Cinema verification code is ${code}. This code expires in ${env.verificationCodeTtl / 60} minutes.`,
     html: `<div style="background:#0d0a09;color:#f0ebe5;font-family:sans-serif;padding:32px;max-width:480px">
       <h1 style="color:#d4a84f;margin:0 0 8px">AYBU Cinema</h1>
       <p style="color:#b8a98a">Use the code below to verify your email:</p>
@@ -37,7 +46,6 @@ async function sendVerificationCode(email) {
       <p style="color:#8a7a6a">This code expires in ${env.verificationCodeTtl / 60} minutes.</p>
     </div>`
   });
-  if (error) throw new Error(error.message);
   return code;
 }
 

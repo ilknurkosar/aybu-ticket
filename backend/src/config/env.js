@@ -22,8 +22,11 @@ const env = {
   lokiUrl: process.env.GRAFANA_LOKI_URL || '',
   lokiUsername: process.env.GRAFANA_LOKI_USERNAME || '',
   lokiPassword: process.env.GRAFANA_LOKI_PASSWORD || '',
-  resendApiKey: process.env.RESEND_API_KEY || '',
-  verificationEmailFrom: process.env.VERIFICATION_EMAIL_FROM || 'AYBU Cinema <onboarding@resend.dev>',
+  smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+  smtpPort: Number(process.env.SMTP_PORT || 465),
+  smtpUser: process.env.SMTP_USER || '',
+  smtpPass: process.env.SMTP_PASS || '',
+  verificationEmailFrom: process.env.VERIFICATION_EMAIL_FROM || process.env.SMTP_USER || '',
   verificationCodeTtl: Number(process.env.VERIFICATION_CODE_TTL || 600)
 };
 

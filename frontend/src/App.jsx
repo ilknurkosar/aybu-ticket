@@ -108,6 +108,7 @@ function VerifyEmail() {
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [sending, setSending] = useState(true);
   const [sent, setSent] = useState(false);
   const sentRef = useRef(false);
 
@@ -115,8 +116,10 @@ function VerifyEmail() {
     if (user?.emailVerified) navigate('/events', { replace: true });
     if (!sentRef.current) {
       sentRef.current = true;
-      sendVerification().catch((err) => setError(err.message));
-      setSent(true);
+      sendVerification()
+        .then(() => setSent(true))
+        .catch((err) => setError(err.message))
+        .finally(() => setSending(false));
     }
   }, []);
 
@@ -133,11 +136,14 @@ function VerifyEmail() {
 
   async function resend() {
     setError('');
+    setSending(true);
     try {
       await sendVerification();
       setSent(true);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSending(false);
     }
   }
 
@@ -146,7 +152,11 @@ function VerifyEmail() {
       <section className="auth-card">
         <p className="eyebrow">Email verification</p>
         <h2>Check your inbox</h2>
-        <p className="muted">We sent a 6-digit code to <strong>{user?.email}</strong>. Enter it below to verify your account.</p>
+        <p className="muted">
+          {sending && <>Sending a 6-digit code to <strong>{user?.email}</strong>...</>}
+          {!sending && sent && <>We sent a 6-digit code to <strong>{user?.email}</strong>. Enter it below to verify your account.</>}
+          {!sending && !sent && <>We could not send a verification code to <strong>{user?.email}</strong>. Please try again.</>}
+        </p>
         <form onSubmit={submit} className="form">
           <input
             placeholder="000000"
@@ -160,7 +170,7 @@ function VerifyEmail() {
         </form>
         <p className="muted" style={{ textAlign: 'center' }}>
           Didn&apos;t get it?{' '}
-          <button className="link-button" onClick={resend}>Send a new code</button>
+          <button className="link-button" disabled={sending} onClick={resend}>{sending ? 'Sending...' : 'Send a new code'}</button>
         </p>
       </section>
     </main>
