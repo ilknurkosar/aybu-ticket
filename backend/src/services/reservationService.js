@@ -63,4 +63,15 @@ async function listUserReservations(userId) {
   return result.rows;
 }
 
-module.exports = { createReservation, listUserReservations };
+async function cancelReservation({ reservationId, userId }) {
+  const result = await query(
+    `DELETE FROM reservations
+     WHERE id = $1 AND user_id = $2 AND status = 'confirmed'
+     RETURNING id`,
+    [reservationId, userId]
+  );
+  if (!result.rowCount) throw new HttpError(404, 'Reservation not found');
+  return result.rows[0];
+}
+
+module.exports = { createReservation, listUserReservations, cancelReservation };

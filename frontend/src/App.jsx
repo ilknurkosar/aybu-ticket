@@ -193,18 +193,23 @@ function EventsPage() {
       </div>
       {error && <div className="alert">{error}</div>}
       <div className="event-grid">
-        {events.map((event) => (
-          <Link className="event-card" key={event.id} to={`/events/${event.id}`}>
-            <img src={event.poster_url || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80'} alt="" />
-            <div>
-              <span>{new Date(event.starts_at).toLocaleString()}</span>
-              <h3>{event.title}</h3>
-              <p>{event.venue}</p>
-              <div className="progress"><i style={{ width: `${event.total_seats ? (event.reserved_seats / event.total_seats) * 100 : 0}%` }} /></div>
-              <small>{event.reserved_seats}/{event.total_seats} seats reserved</small>
-            </div>
-          </Link>
-        ))}
+        {events.map((event) => {
+          const occupancy = event.total_seats ? Math.round((event.reserved_seats / event.total_seats) * 100) : 0;
+          return (
+            <Link className="event-card" key={event.id} to={`/events/${event.id}`}>
+              <img src={event.poster_url || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80'} alt="" />
+              <div>
+                <span>{new Date(event.starts_at).toLocaleString()}</span>
+                <h3>{event.title}</h3>
+                <p>{event.venue}</p>
+                <div className="progress" aria-label={`${occupancy}% reserved`}>
+                  <i style={{ width: `${occupancy}%`, minWidth: event.reserved_seats ? '18px' : 0 }} />
+                </div>
+                <small className="progress-meta"><strong>{occupancy}% full</strong><span>{event.reserved_seats}/{event.total_seats} seats reserved</span></small>
+              </div>
+            </Link>
+          );
+        })}
       </div>
     </main>
   );
@@ -353,18 +358,36 @@ function EventDetail() {
 
 function MyReservations() {
   const [reservations, setReservations] = useState([]);
+  const [error, setError] = useState('');
   useEffect(() => {
-    apiRequest('/reservations/mine').then((data) => setReservations(data.reservations)).catch(() => {});
+    apiRequest('/reservations/mine').then((data) => setReservations(data.reservations)).catch((err) => setError(err.message));
   }, []);
+
+  async function refundTicket(ticket) {
+    if (!window.confirm(`Refund ticket ${ticket.row_label}${ticket.seat_number}?`)) return;
+    setError('');
+    try {
+      await apiRequest(`/reservations/${ticket.id}`, { method: 'DELETE' });
+      setReservations((current) => current.filter((item) => item.id !== ticket.id));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   return (
     <main className="page">
       <h1>My Tickets</h1>
+      {error && <div className="alert">{error}</div>}
       <div className="ticket-list">
+        {!reservations.length && <p className="muted">You do not have any tickets yet.</p>}
         {reservations.map((ticket) => (
           <article className="ticket" key={ticket.id}>
-            <strong>{ticket.title}</strong>
-            <span>{ticket.row_label}{ticket.seat_number}</span>
-            <small>{new Date(ticket.starts_at).toLocaleString()} · {ticket.venue}</small>
+            <div>
+              <strong>{ticket.title}</strong>
+              <span>{ticket.row_label}{ticket.seat_number}</span>
+              <small>{new Date(ticket.starts_at).toLocaleString()} · {ticket.venue}</small>
+            </div>
+            <button className="button ghost refund-button" onClick={() => refundTicket(ticket)}>Refund</button>
           </article>
         ))}
       </div>
