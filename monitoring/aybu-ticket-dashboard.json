@@ -24,7 +24,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -98,7 +98,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "sum by (method, status) (rate(aybu_http_request_duration_seconds_count[5m]))",
@@ -113,7 +113,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -167,7 +167,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "histogram_quantile(0.95, sum by (le) (rate(aybu_http_request_duration_seconds_bucket[5m])))",
@@ -182,7 +182,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -255,7 +255,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "round(increase(aybu_seat_lock_attempts_total[15m]))",
@@ -266,7 +266,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "round(increase(aybu_seat_lock_success_total[15m]))",
@@ -277,7 +277,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "round(increase(aybu_seat_lock_conflict_total[15m]))",
@@ -292,7 +292,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -365,7 +365,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "round(increase(aybu_reservation_success_total[15m]))",
@@ -376,7 +376,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "round(sum by (reason) (increase(aybu_reservation_failed_total[15m])))",
@@ -391,7 +391,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -444,7 +444,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "100 * ((sum(rate(aybu_process_cpu_user_seconds_total[5m])) or vector(0)) + (sum(rate(aybu_process_cpu_system_seconds_total[5m])) or vector(0)))",
@@ -459,7 +459,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -512,7 +512,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_process_resident_memory_bytes",
@@ -527,7 +527,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -577,7 +577,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "up{job=\"aybu-ticket-backend\"}",
@@ -592,7 +592,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -666,7 +666,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_active_locks",
@@ -681,7 +681,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -755,7 +755,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_db_pool_total",
@@ -770,7 +770,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -824,7 +824,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_nodejs_eventloop_lag_seconds",
@@ -839,7 +839,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -913,7 +913,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_nodejs_heap_size_total_bytes",
@@ -924,7 +924,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_nodejs_heap_size_used_bytes",
@@ -935,7 +935,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "aybu_nodejs_external_memory_bytes",
@@ -950,7 +950,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
+        "uid": "grafanacloud-ilknurkosar-prom"
       },
       "fieldConfig": {
         "defaults": {
@@ -1023,7 +1023,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
+            "uid": "grafanacloud-ilknurkosar-prom"
           },
           "editorMode": "code",
           "expr": "sum by (method, status) (rate(aybu_http_requests_total[5m]))",
@@ -1040,21 +1040,7 @@
   "schemaVersion": 39,
   "tags": ["aybu", "cloud-run", "prometheus", "redis-locks"],
   "templating": {
-    "list": [
-      {
-        "current": {},
-        "hide": 0,
-        "includeAll": false,
-        "label": "Prometheus datasource",
-        "multi": false,
-        "name": "DS_PROMETHEUS",
-        "options": [],
-        "query": "prometheus",
-        "refresh": 1,
-        "regex": ".*prom.*",
-        "type": "datasource"
-      }
-    ]
+    "list": []
   },
   "time": {
     "from": "now-1h",
