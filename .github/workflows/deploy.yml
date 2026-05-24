@@ -81,3 +81,16 @@ jobs:
             --concurrency 80 \
             --timeout 60 \
             --set-env-vars "NODE_ENV=production,CLIENT_URL=${CLIENT_URL},DATABASE_URL=${DATABASE_URL},REDIS_URL=${REDIS_URL},REDIS_TOKEN=${REDIS_TOKEN},JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET},JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET},LOCK_TTL_SECONDS=300,ALLOWED_EMAIL_DOMAIN=@aybu.edu.tr,DATABASE_SSL=true,ADMIN_EMAIL=${ADMIN_EMAIL},ADMIN_FULL_NAME=${ADMIN_FULL_NAME},GRAFANA_LOKI_URL=${GRAFANA_LOKI_URL},GRAFANA_LOKI_USERNAME=${GRAFANA_LOKI_USERNAME},GRAFANA_LOKI_PASSWORD=${GRAFANA_LOKI_PASSWORD},SMTP_HOST=${SMTP_HOST},SMTP_PORT=${SMTP_PORT},SMTP_USER=${SMTP_USER},SMTP_PASS=${SMTP_PASS},VERIFICATION_EMAIL_FROM=${VERIFICATION_EMAIL_FROM}"
+      - name: Provision Grafana dashboard
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          GRAFANA_API_TOKEN: ${{ secrets.GRAFANA_API_TOKEN }}
+          GRAFANA_DASHBOARD_FOLDER_UID: ${{ secrets.GRAFANA_DASHBOARD_FOLDER_UID }}
+        run: node monitoring/create-grafana-dashboard.js
+      - name: Provision Grafana alerts
+        env:
+          GRAFANA_URL: ${{ secrets.GRAFANA_URL }}
+          GRAFANA_API_TOKEN: ${{ secrets.GRAFANA_API_TOKEN }}
+          GRAFANA_PROMETHEUS_UID: ${{ secrets.GRAFANA_PROMETHEUS_UID }}
+          GRAFANA_ALERT_EMAIL: ${{ secrets.GRAFANA_ALERT_EMAIL }}
+        run: node monitoring/create-grafana-alerts.js

@@ -79,6 +79,36 @@
         "summary": "Unusually high lock conflict rate",
         "description": "Seat lock conflicts are above 10 per second, possible Redis issue or contention."
       }
+    },
+    {
+      "title": "Email verification send failures",
+      "expr": "increase(aybu_http_requests_total{route=\"/send-verification\",status=~\"424|5..\"}[10m]) > 0",
+      "for": "1m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "Verification emails are failing",
+        "description": "At least one email verification send request failed in the last 10 minutes. Check SMTP settings and Gmail App Password."
+      }
+    },
+    {
+      "title": "Reservation failures detected",
+      "expr": "increase(aybu_reservation_failed_total[10m]) > 2",
+      "for": "2m",
+      "labels": { "severity": "warning", "team": "aybu" },
+      "annotations": {
+        "summary": "Reservation failures are increasing",
+        "description": "More than 2 reservation failures were recorded in the last 10 minutes."
+      }
+    },
+    {
+      "title": "High HTTP 4xx rate",
+      "expr": "sum(rate(aybu_http_requests_total{status=~\"4..\"}[5m])) / sum(rate(aybu_http_requests_total[5m])) > 0.2",
+      "for": "5m",
+      "labels": { "severity": "info", "team": "aybu" },
+      "annotations": {
+        "summary": "HTTP 4xx rate is above 20%",
+        "description": "Client-side/API validation errors are unusually high for 5 minutes."
+      }
     }
   ]
 }
