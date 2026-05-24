@@ -258,7 +258,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(aybu_seat_lock_attempts_total[15m])",
+          "expr": "round(increase(aybu_seat_lock_attempts_total[15m]))",
           "legendFormat": "attempts",
           "range": true,
           "refId": "A"
@@ -269,7 +269,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(aybu_seat_lock_success_total[15m])",
+          "expr": "round(increase(aybu_seat_lock_success_total[15m]))",
           "legendFormat": "success",
           "range": true,
           "refId": "B"
@@ -280,7 +280,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(aybu_seat_lock_conflict_total[15m])",
+          "expr": "round(increase(aybu_seat_lock_conflict_total[15m]))",
           "legendFormat": "conflicts",
           "range": true,
           "refId": "C"
@@ -368,7 +368,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "increase(aybu_reservation_success_total[15m])",
+          "expr": "round(increase(aybu_reservation_success_total[15m]))",
           "legendFormat": "reservation success",
           "range": true,
           "refId": "A"
@@ -379,7 +379,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum by (reason) (increase(aybu_reservation_failed_total[15m]))",
+          "expr": "round(sum by (reason) (increase(aybu_reservation_failed_total[15m])))",
           "legendFormat": "failed {{reason}}",
           "range": true,
           "refId": "B"
